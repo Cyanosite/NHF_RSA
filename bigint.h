@@ -2,18 +2,17 @@
 #define BIGINT_H
 #include <iostream>
 template <unsigned int bits = 64>
-class Bigint
+struct Bigint
 {
-    unsigned long *storage;
-
-public:
-    Bigint(const unsigned long & = 0);
+    unsigned long long *storage;
+    Bigint(const unsigned long long & = 0);
     Bigint(const char *const &);
-    void print()
-    {
-        std::cout << storage[0];
-    }
+    Bigint(const Bigint &);
     ~Bigint();
+    void print() const;
+    Bigint &operator=(const Bigint &);
+    unsigned long long &operator[](const unsigned int &) const;
+    Bigint operator+(const Bigint &) const;
 };
 
 #endif

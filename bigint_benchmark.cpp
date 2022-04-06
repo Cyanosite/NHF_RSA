@@ -3,11 +3,10 @@
 #include "bigint.h"
 int main()
 {
-    Bigint<2048>("FFFFFFFFFFFFFFFF").print();
-    std::cout << std::endl;
-    Bigint<2048> nagy("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
-    nagy.print();
-    std::cout << std::endl;
-    Bigint<>(18446744073709551615).print();
+    Bigint<2048> asd("FFFFFFFFFFFFFFFF");
+    Bigint<2048> asd2(asd);
+    Bigint<2048> asd3(asd);
+    asd = asd + asd2 + asd3;
+    asd.print();
     return 0;
 }
