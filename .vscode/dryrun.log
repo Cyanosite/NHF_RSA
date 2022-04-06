@@ -1,0 +1,11 @@
+make.exe --dry-run --always-make --keep-going --print-directory
+make.exe: Entering directory `c:/Users/zsomb/OneDrive/Programming/NHF_RSA'
+g++ -ggdb -pedantic -Wall -DMEMTRACE   -c -o bigint_benchmark.o bigint_benchmark.cpp
+ 
+g++ -ggdb -pedantic -Wall -DMEMTRACE   -c -o bigint.o bigint.cpp
+ 
+g++ -ggdb -pedantic -Wall -DMEMTRACE   -c -o memtrace.o memtrace.cpp
+g++ -o main bigint_benchmark.o bigint.o memtrace.o
+ 
+make.exe: Leaving directory `c:/Users/zsomb/OneDrive/Programming/NHF_RSA'
+ 

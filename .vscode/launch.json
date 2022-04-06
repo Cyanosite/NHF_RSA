@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch",
+            "cwd": "${workspaceRoot}",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${relativeFileDirname}/main.exe",
+            "preLaunchTask": "make"
+        }
+    ]
+}
