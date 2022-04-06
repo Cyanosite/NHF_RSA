@@ -14,11 +14,18 @@ Bigint<bits>::Bigint(const unsigned long &x)
 template <unsigned int bits>
 Bigint<bits>::Bigint(const char *const &x)
 {
+    storage = new unsigned long[bits / sizeof(unsigned long)];
+    std::memset(storage, 0, sizeof(storage));
     unsigned short number_of_runs = (strlen(x) + 15) / 16;
     for (int i = 0; i < number_of_runs; ++i)
     {
-        sscanf(x + i * sizeof(char), "%16X", storage[i]);
+        sscanf(x + i * sizeof(char), "%lX", &storage[i]);
     }
+}
+template <unsigned int bits>
+Bigint<bits>::~Bigint()
+{
+    delete[] storage;
 }
 
 template class Bigint<>;

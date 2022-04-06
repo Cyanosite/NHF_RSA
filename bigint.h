@@ -13,6 +13,7 @@ public:
     {
         std::cout << storage[0];
     }
+    ~Bigint();
 };
 
 #endif
