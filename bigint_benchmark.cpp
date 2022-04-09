@@ -15,5 +15,14 @@ int main()
     std::cout << mul << std::endl;
     if (bignumber == mul)
         std::cout << "bignumber and mul are equal" << std::endl;
+    /*Bigint<256> N("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141");
+    Bigint<256> EIGHTY_EIGHT("FFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD03641410000000000000000000000");
+    if ((N << 88) == EIGHTY_EIGHT)
+        std::cout << "<< works lmao, how?" << std::endl;*/
+    Bigint<256> N2("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141");
+    Bigint<256> N3("7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0");
+    std::cout << N3 << " == " << (N2 >> 1) << std::endl;
+    if ((N2 >> 1) == N3)
+        std::cout << "<< works lmao, how?" << std::endl;
     return 0;
 }

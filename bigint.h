@@ -12,41 +12,50 @@ struct Bigint
     Bigint &operator=(const Bigint &);
     bool operator==(const Bigint &) const;
     bool operator!=(const Bigint &) const;
+    bool operator<(const Bigint &) const;
+    bool operator<=(const Bigint &) const;
+    bool operator>(const Bigint &) const;
+    bool operator>=(const Bigint &) const;
     unsigned int &operator[](const unsigned int &) const;
     unsigned int num_bits(const Bigint &) const;
+    bool is_even(const Bigint &) const;
     Bigint operator+(const Bigint &) const;
     Bigint operator-(const Bigint &) const;
     Bigint operator*(const Bigint &) const;
     Bigint operator/(const Bigint &) const;
+    Bigint operator%(const Bigint &) const;
     Bigint operator<<(const unsigned int &) const;
     Bigint operator>>(const unsigned int &) const;
 };
 template <unsigned int bits>
 Bigint<bits>::Bigint(const unsigned int &x)
 {
-    if (bits % sizeof(unsigned int) != 0)
+    if (bits % (sizeof(unsigned int) * 8) != 0)
         throw("wrong size");
-    storage = new unsigned int[bits / sizeof(unsigned int)]{0};
+    storage = new unsigned int[bits / (sizeof(unsigned int) * 8)]{0};
     storage[0] = x;
 }
 template <unsigned int bits>
 Bigint<bits>::Bigint(const char *const &x)
 {
-    if (bits % sizeof(unsigned int) != 0)
+    if (bits % (sizeof(unsigned int) * 8) != 0)
         throw("wrong size");
-    storage = new unsigned int[bits / sizeof(unsigned int)]{0};
+    storage = new unsigned int[bits / (sizeof(unsigned int) * 8)]{0};
     unsigned short number_of_runs = (strlen(x) + 7) / 8;
+    std::cout << "strlen : " << strlen(x) << std::endl;
     if (number_of_runs > 1)
     {
         const char *startpos = x + strlen(x) * sizeof(char) - 8 * sizeof(char);
         int i = 0;
         for (; i < number_of_runs - 1; ++i)
         {
-            sscanf(startpos - i * 8, "%8X", &storage[i]);
+            startpos -= 8;
+            sscanf(startpos, "%8X", &storage[i]);
         }
         char read_this[7] = "%";
         sprintf(read_this + 1 * sizeof(char), "%dX", (int)strlen(x) % 8);
         sscanf(x, read_this, &storage[i]);
+        std::cout << std::hex << storage[i] << std::endl;
     }
     else
         sscanf(x, "%X", &storage[0]);
@@ -54,7 +63,7 @@ Bigint<bits>::Bigint(const char *const &x)
 template <unsigned int bits>
 Bigint<bits>::Bigint(const Bigint &x)
 {
-    storage = new unsigned int[bits / sizeof(unsigned int)]{0};
+    storage = new unsigned int[bits / (sizeof(unsigned int) * 8)]{0};
     std::memcpy(storage, x.storage, sizeof(x.storage) * sizeof(unsigned int));
 }
 template <unsigned int bits>
@@ -79,7 +88,7 @@ std::ostream &operator<<(std::ostream &os, const Bigint<bits> &x)
             }
         }
         else
-            os << std::setw(8) << std::setfill('0') << x[i];
+            os << std::setw(8) << std::setfill('0') << (unsigned int)x[i];
     }
     if (isnull)
         os << 0;
@@ -90,7 +99,7 @@ template <unsigned int bits>
 Bigint<bits> &Bigint<bits>::operator=(const Bigint &x)
 {
     delete[] storage;
-    storage = new unsigned int[bits / sizeof(unsigned int)]{0};
+    storage = new unsigned int[bits / (sizeof(unsigned int) * 8)]{0};
     std::memcpy(storage, x.storage, sizeof(x.storage) * sizeof(unsigned int));
     return *this;
 }
@@ -122,7 +131,8 @@ unsigned int &Bigint<bits>::operator[](const unsigned int &i) const
 template <unsigned int bits>
 unsigned int Bigint<bits>::num_bits(const Bigint &) const
 {
-    for (int i = bits / (sizeof(unsigned int) * 8) - 1, int j = 0; i >= 0; --i, ++j)
+    int j = 0;
+    for (int i = bits / (sizeof(unsigned int) * 8) - 1; i >= 0; --i, ++j)
     {
         if (storage[i] != 0)
         {
@@ -133,7 +143,7 @@ unsigned int Bigint<bits>::num_bits(const Bigint &) const
 template <unsigned int bits>
 Bigint<bits> Bigint<bits>::operator+(const Bigint &x) const
 {
-    Bigint res(x);
+    Bigint<bits> res;
     unsigned short carry = 0;
     unsigned long long temp;
     for (unsigned int i = 0; i < bits / (sizeof(unsigned int) * 8); ++i)
@@ -174,11 +184,15 @@ Bigint<bits> Bigint<bits>::operator*(const Bigint &x) const
         for (unsigned int j = 0; j < bits / (sizeof(unsigned int) * 8); ++j)
         {
             k = i + j;
-            temp = (unsigned long long)storage[i] * (unsigned long long)x.storage[j] + (unsigned long long)carry;
-            carry = temp >> (8 * sizeof(unsigned int));
-            res[k] += (unsigned int)temp;
+            if (k < bits / (sizeof(unsigned int) * 8))
+            {
+                temp = (unsigned long long)storage[i] * (unsigned long long)x.storage[j] + (unsigned long long)carry;
+                carry = temp >> (8 * sizeof(unsigned int));
+                res[k] += (unsigned int)temp;
+            }
         }
-        res[k] = carry;
+        if (k < bits / (sizeof(unsigned int) * 8))
+            res[k] = carry;
     }
     if (carry)
         throw("overflow");
@@ -200,14 +214,52 @@ template <unsigned int bits>
 Bigint<bits> Bigint<bits>::operator<<(const unsigned int &shift) const
 {
     if (shift >= bits)
-        return Bigint(0);
+        return Bigint();
+    /*Bigint ret;
+    unsigned int full_shifts = shift / (sizeof(unsigned int) * 8);
+    unsigned int small_shift = shift & ((sizeof(unsigned int) * 8) - 1);
+    unsigned int n = sizeof(unsigned int) * 8 - full_shifts;
+    if (small_shift == 0)
+    {
+        for (int i = 0; i < n; ++i)
+            ret.storage[i] = storage[i + full_shifts];
+    }
+    else
+    {
+        for (int i = 0; i < n; ++i)
+        {
+            unsigned int lo = storage[i + full_shifts] >> small_shift;
+            if (i < (sizeof(unsigned int) * 8) - 1 - full_shifts)
+                lo |= storage[i + full_shifts + 1] << (sizeof(unsigned int) * 8 - small_shift);
+            ret.storage[i] = lo;
+        }
+    }
+    return ret;*/
 }
 template <unsigned int bits>
 Bigint<bits> Bigint<bits>::operator>>(const unsigned int &shift) const
 {
     if (shift >= bits)
-        return Bigint(0);
-    unsigned int shift_num = shift / (sizeof(unsigned int) * 8);
-    unsigned int rem = shift % (sizeof(unsigned int) * 8);
+        return Bigint();
+    Bigint ret;
+    unsigned int full_shifts = shift / (sizeof(unsigned int) * 8);
+    unsigned int small_shift = shift & ((sizeof(unsigned int) * 8) - 1);
+    unsigned int n = bits / (sizeof(unsigned int) * 8) - full_shifts;
+    if (small_shift == 0)
+    {
+        for (int i = 0; i < n; ++i)
+            ret.storage[i] = storage[i + full_shifts];
+    }
+    else
+    {
+        for (int i = 0; i < n; ++i)
+        {
+            unsigned int lo = storage[i + full_shifts] >> small_shift;
+            if (i < n - 1)
+                lo |= storage[i + full_shifts + 1] << (sizeof(unsigned int) * 8 - small_shift);
+            ret.storage[i] = lo;
+        }
+    }
+    return ret;
 }
 #endif
