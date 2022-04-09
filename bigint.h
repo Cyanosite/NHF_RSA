@@ -13,9 +13,13 @@ struct Bigint
     bool operator==(const Bigint &) const;
     bool operator!=(const Bigint &) const;
     unsigned int &operator[](const unsigned int &) const;
+    unsigned int num_bits(const Bigint &) const;
     Bigint operator+(const Bigint &) const;
     Bigint operator-(const Bigint &) const;
     Bigint operator*(const Bigint &) const;
+    Bigint operator/(const Bigint &) const;
+    Bigint operator<<(const unsigned int &) const;
+    Bigint operator>>(const unsigned int &) const;
 };
 template <unsigned int bits>
 Bigint<bits>::Bigint(const unsigned int &x)
@@ -75,7 +79,7 @@ std::ostream &operator<<(std::ostream &os, const Bigint<bits> &x)
             }
         }
         else
-            os << x[i];
+            os << std::setw(8) << std::setfill('0') << x[i];
     }
     if (isnull)
         os << 0;
@@ -114,6 +118,17 @@ template <unsigned int bits>
 unsigned int &Bigint<bits>::operator[](const unsigned int &i) const
 {
     return storage[i];
+}
+template <unsigned int bits>
+unsigned int Bigint<bits>::num_bits(const Bigint &) const
+{
+    for (int i = bits / (sizeof(unsigned int) * 8) - 1, int j = 0; i >= 0; --i, ++j)
+    {
+        if (storage[i] != 0)
+        {
+            return bits - __builtin_clz(storage[i]) - j * 8 * sizeof(unsigned int);
+        }
+    }
 }
 template <unsigned int bits>
 Bigint<bits> Bigint<bits>::operator+(const Bigint &x) const
@@ -168,5 +183,31 @@ Bigint<bits> Bigint<bits>::operator*(const Bigint &x) const
     if (carry)
         throw("overflow");
     return res;
+}
+template <unsigned int bits>
+Bigint<bits> Bigint<bits>::operator/(const Bigint &x) const
+{
+    unsigned int bd(this->num_bits() - x.num_bits());
+    Bigint rem(*this);
+    Bigint quo(0);
+    Bigint c(x << bd);
+    Bigint e(Bigint(1) << bd);
+    while (true)
+    {
+    }
+}
+template <unsigned int bits>
+Bigint<bits> Bigint<bits>::operator<<(const unsigned int &shift) const
+{
+    if (shift >= bits)
+        return Bigint(0);
+}
+template <unsigned int bits>
+Bigint<bits> Bigint<bits>::operator>>(const unsigned int &shift) const
+{
+    if (shift >= bits)
+        return Bigint(0);
+    unsigned int shift_num = shift / (sizeof(unsigned int) * 8);
+    unsigned int rem = shift % (sizeof(unsigned int) * 8);
 }
 #endif
