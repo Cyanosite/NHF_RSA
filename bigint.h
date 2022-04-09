@@ -222,12 +222,12 @@ Bigint<bits> Bigint<bits>::operator<<(const unsigned int &shift) const
     unsigned int rshift = sizeof(unsigned int) * 8 - lshift;
     if (lshift == 0)
     {
-        for (int i = bits / (sizeof(unsigned int) * 8) - 1; i > full_shifts; --i)
+        for (unsigned int i = bits / (sizeof(unsigned int) * 8) - 1; i > full_shifts; --i)
             ret.storage[i] = storage[i - full_shifts] << lshift;
     }
     else
     {
-        for (int i = bits / (sizeof(unsigned int) * 8) - 1; i > full_shifts; --i)
+        for (unsigned int i = bits / (sizeof(unsigned int) * 8) - 1; i > full_shifts; --i)
         {
             unsigned int lo = storage[i - full_shifts] << lshift;
             lo |= storage[i - full_shifts - 1] >> rshift;
@@ -248,18 +248,18 @@ Bigint<bits> Bigint<bits>::operator>>(const unsigned int &shift) const
     unsigned int n = bits / (sizeof(unsigned int) * 8) - full_shifts;
     if (small_shift == 0)
     {
-        for (int i = 0; i < n; ++i)
+        for (unsigned int i = 0; i < n; ++i)
             ret.storage[i] = storage[i + full_shifts];
     }
     else
     {
-        for (int i = 0; i < n; ++i)
+        for (unsigned int i = 0; i < n - 1; ++i)
         {
             unsigned int lo = storage[i + full_shifts] >> small_shift;
-            if (i < n - 1)
-                lo |= storage[i + full_shifts + 1] << (sizeof(unsigned int) * 8 - small_shift);
+            lo |= storage[i + full_shifts + 1] << (sizeof(unsigned int) * 8 - small_shift);
             ret.storage[i] = lo;
         }
+        ret.storage[n - 1] = storage[n - 1 + full_shifts] >> small_shift;
     }
     return ret;
 }
