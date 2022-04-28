@@ -13,9 +13,9 @@ class Message
     Bigint<4096> private_keys[2];
 
 public:
-    Message() : is_encrypted(false), public_key(0), private_keys(0, 0) {}
-    Message(const std::string &text) : message(text), is_encrypted(false), public_key(0), private_keys(0, 0) {}
-    Message(const char *text) : message(text), is_encrypted(false), public_key(0), private_keys(0, 0) {}
+    Message() : is_encrypted(false), public_key(), private_keys() {}
+    Message(const std::string &text) : message(text), is_encrypted(false), public_key(), private_keys() {}
+    Message(const char *text) : message(text), is_encrypted(false), public_key(), private_keys() {}
     void encrypt();
     void decrypt();
 };
