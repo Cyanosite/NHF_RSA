@@ -18,7 +18,7 @@ struct Bigint
     bool operator>=(const Bigint &) const;
     unsigned int &operator[](const unsigned int &) const;
     unsigned int num_bits() const;
-    bool is_even(const Bigint &) const;
+    bool is_even() const;
     Bigint operator+(const Bigint &) const;
     Bigint operator-(const Bigint &) const;
     Bigint operator*(const Bigint &) const;
