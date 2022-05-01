@@ -19,6 +19,7 @@ struct Bigint
     unsigned int &operator[](const unsigned int &) const;
     unsigned int num_bits() const;
     bool is_even() const;
+    bool is_odd() const;
     Bigint operator+(const Bigint &) const;
     Bigint operator-(const Bigint &) const;
     Bigint operator*(const Bigint &) const;
@@ -149,6 +150,16 @@ unsigned int Bigint<bits>::num_bits() const
     while (i > 0 && storage[i] == 0)
         --i;
     return storage[i] == 0 ? i * 8 * sizeof(unsigned int) : (i + 1) * 8 * sizeof(unsigned int) - __builtin_clz(storage[i]);
+}
+template <unsigned int bits>
+bool Bigint<bits>::is_even() const
+{
+    return !(this->storage[0] & 1);
+}
+template <unsigned int bits>
+bool Bigint<bits>::is_odd() const
+{
+    return this->storage[0] & 1;
 }
 template <unsigned int bits>
 Bigint<bits> Bigint<bits>::operator+(const Bigint &x) const

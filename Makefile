@@ -1,6 +1,6 @@
 PROG = main
-SRCS = bigint_benchmark.cpp memtrace.cpp
-HDRS = bigint.h memtrace.h
+SRCS = bigint_test.cpp memtrace.cpp
+HDRS = bigint.h algorithms.h message.h gtest_lite.h memtrace.h
 OBJS = $(SRCS:.cpp=.o)
 
 CXXFLAGS = -ggdb -std=c++11 -pedantic -Wall -DMEMTRACE
