@@ -1,6 +1,7 @@
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
+#include "memtrace.h"
 #include <iostream>
 #include <string>
 #include "bigint.h"

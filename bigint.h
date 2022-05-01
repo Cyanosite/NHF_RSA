@@ -1,6 +1,8 @@
 #ifndef BIGINT_H
 #define BIGINT_H
+#include "memtrace.h"
 #include <iostream>
+#include <iomanip>
 template <unsigned int bits = 64>
 struct Bigint
 {

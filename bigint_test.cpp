@@ -1,3 +1,4 @@
+#include "memtrace.h"
 #include "gtest_lite.h"
 #include "bigint.h"
 
