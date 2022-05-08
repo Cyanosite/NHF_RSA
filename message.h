@@ -8,7 +8,6 @@
 #include <string>
 #include "algorithms.h"
 #include "bigint.h"
-
 class Message
 {
     std::vector<Bigint<4096>> message;
@@ -34,7 +33,6 @@ public:
             do
             {
                 prime.rng(2048);
-                std::cout << prime << std::endl;
             } while (!prime_check(prime));
             private_keys[i] = prime;
         }

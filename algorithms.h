@@ -13,7 +13,10 @@ Bigint<bits> euclidean(Bigint<bits> &m, Bigint<bits> &a)
     {
         r = m % a;
         if (r == null)
+        {
+            std::cout << a << std::endl;
             return a;
+        }
         m = a;
         a = r;
     }
@@ -62,9 +65,9 @@ bool prime_check(Bigint<bits> &m)
     {
         Bigint<bits> a;
         a.rng(high.num_bits());
-        std::cout << a << std::endl;
         if (euclidean(m, a) != one)
             return false;
+        std::cout << "hmm" << std::endl;
         if (exponentiation(m, a, high) != one)
             return false;
     }
