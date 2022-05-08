@@ -3,7 +3,7 @@ SRCS = bigint_test.cpp memtrace.cpp
 HDRS = bigint.h algorithms.h message.h gtest_lite.h memtrace.h
 OBJS = $(SRCS:.cpp=.o)
 
-CXXFLAGS = -ggdb -pedantic -Wall -DMEMTRACE
+CXXFLAGS = -ggdb -pedantic -Wall #-DMEMTRACE
 
 $(PROG): $(OBJS) 
 	$(CXX) -o $(PROG) $(OBJS)

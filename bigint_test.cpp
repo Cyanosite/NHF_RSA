@@ -1,6 +1,8 @@
 #include "memtrace.h"
 #include "gtest_lite.h"
 #include "bigint.h"
+#include "message.h"
+#include <iostream>
 
 int main()
 {
@@ -98,5 +100,12 @@ int main()
         Bigint<256> res("2f3548d23b7c2424d");
         EXPECT_EQ(x >> 70, res) << "right shift failed";
     }
-    END return 0;
+    END
+        Message my_message("Hello World");
+    std::cout << my_message << std::endl;
+    my_message.encrypt();
+    std::cout << my_message << std::endl;
+    my_message.decrypt();
+    std::cout << my_message << std::endl;
+    return 0;
 }

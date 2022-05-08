@@ -44,7 +44,7 @@ Bigint<bits> congruence(Bigint<bits> &a, Bigint<bits> &b, const Bigint<bits> &om
     {
         Bigint<bits> t(m / a);
         Bigint<bits> r = m % a;
-        if (r == 0)
+        if (r == null)
             return q % om;
         Bigint<bits> c = (p - (t * q)) % om;
         m = a;
@@ -56,12 +56,13 @@ Bigint<bits> congruence(Bigint<bits> &a, Bigint<bits> &b, const Bigint<bits> &om
 template <unsigned int bits>
 bool prime_check(Bigint<bits> &m)
 {
-    const Bigint<bits> high(m - 1);
+    Bigint<bits> high(m - 1);
     const Bigint<bits> one(1);
     for (unsigned short k = 0; k < 100; ++k)
     {
-        Bigint<bits> a; // generate randomly
-        a = a % high;
+        Bigint<bits> a;
+        a.rng(high.num_bits());
+        std::cout << a << std::endl;
         if (euclidean(m, a) != one)
             return false;
         if (exponentiation(m, a, high) != one)

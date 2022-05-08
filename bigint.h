@@ -3,6 +3,7 @@
 #include "memtrace.h"
 #include <iostream>
 #include <iomanip>
+#include <random>
 template <unsigned int bits = 64>
 struct Bigint
 {
@@ -29,6 +30,7 @@ struct Bigint
     Bigint operator%(const Bigint &) const;
     Bigint operator<<(const unsigned int &) const;
     Bigint operator>>(const unsigned int &) const;
+    void rng(const unsigned int & = 0);
 };
 template <unsigned int bits>
 Bigint<bits>::Bigint(const unsigned long long &x)
@@ -328,4 +330,31 @@ Bigint<bits> Bigint<bits>::operator>>(const unsigned int &shift) const
     }
     return ret;
 }
+template <unsigned int bits>
+void Bigint<bits>::rng(const unsigned int &x)
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    if (x == 0)
+    {
+        unsigned int n = bits / (sizeof(unsigned int) * 8);
+        for (unsigned short i = 0; i < n; ++i)
+        {
+            this->storage[i] = gen();
+        }
+    }
+    else
+    {
+        unsigned int n = x / (sizeof(unsigned int) * 8);
+        unsigned int top = x % (sizeof(unsigned int) * 8);
+        for (unsigned short i = 0; i < n; ++i)
+        {
+            this->storage[i] = gen();
+        }
+        if (top)
+            this->storage[n] = gen() & (0xFFFFFFFF >> ((sizeof(unsigned int) * 8) - top));
+    }
+}
+
 #endif
