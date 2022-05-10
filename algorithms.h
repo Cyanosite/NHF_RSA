@@ -5,7 +5,7 @@
 #include "bigint.h"
 
 template <unsigned int bits>
-Bigint<bits> euclidean(Bigint<bits> &m, Bigint<bits> &a)
+Bigint<bits> euclidean(Bigint<bits> m, Bigint<bits> a)
 {
     Bigint<bits> r;
     const Bigint<bits> null;
@@ -13,51 +13,68 @@ Bigint<bits> euclidean(Bigint<bits> &m, Bigint<bits> &a)
     {
         r = m % a;
         if (r == null)
-        {
-            std::cout << a << std::endl;
             return a;
-        }
         m = a;
         a = r;
     }
 }
 template <unsigned int bits>
-Bigint<bits> exponentiation(Bigint<bits> &m, Bigint<bits> &a, Bigint<bits> &b)
+Bigint<bits> exponentiation(Bigint<bits> a, Bigint<bits> b, Bigint<bits> m)
 {
     Bigint<bits> c(1);
     const Bigint<bits> null;
-    a = a % m;
     while (b != null)
     {
-        if (!b.is_even())
+
+        if (b.is_odd())
+        {
             c = (c * a) % m;
+        }
         a = (a * a) % m;
         b = b >> 1;
     }
     return c;
 }
+// make this work and it's done.
 template <unsigned int bits>
-Bigint<bits> congruence(Bigint<bits> &a, Bigint<bits> &b, const Bigint<bits> &om)
+Bigint<bits> inverse(Bigint<bits> a, Bigint<bits> b)
 {
-    Bigint<bits> m(om);
-    Bigint<bits> p;
-    Bigint<bits> q(b);
-    const Bigint<bits> null;
-    while (true)
+    Bigint<bits> b0(b);
+    Bigint<bits> x0;
+    bool x0_sign = false;
+    Bigint<bits> x1(1);
+    bool x1_sign = false;
+    while (a > 1)
     {
-        Bigint<bits> t(m / a);
-        Bigint<bits> r = m % a;
-        if (r == null)
-            return q % om;
-        Bigint<bits> c = (p - (t * q)) % om;
-        m = a;
-        a = r;
-        p = q;
-        q = c;
+        /*Bigint<bits> quotient(r / newr);
+        t = newt;
+        newt = t - (quotient * newt);
+        r = newr;
+        newr = r - (quotient * newr);*/
+        Bigint<bits> q(a / b);
+        Bigint<bits> t = b;
+        b = a % b;
+        a = t;
+        Bigint<bits> t2(x0);
+        bool t2_sign = x0_sign;
+        Bigint<bits> qx0(q * x0);
+        if (x0_sign != x1_sign)
+        {
+            x0 = x1 + qx0;
+            x0_sign = x1_sign;
+        }
+        else
+        {
+            x0 = (x1 > qx0) ? x1 - qx0 : qx0 - x1;
+            x0_sign = x1 > qx0 ? x1_sign : !x0_sign;
+        }
+        x1 = t2;
+        x1_sign = t2_sign;
     }
+    return x1_sign ? b0 - x1 : x1;
 }
 template <unsigned int bits>
-bool prime_check(Bigint<bits> &m)
+bool prime_check(Bigint<bits> m)
 {
     Bigint<bits> high(m - 1);
     const Bigint<bits> one(1);
@@ -67,7 +84,6 @@ bool prime_check(Bigint<bits> &m)
         a.rng(high.num_bits());
         if (euclidean(m, a) != one)
             return false;
-        std::cout << "hmm" << std::endl;
         if (exponentiation(m, a, high) != one)
             return false;
     }

@@ -70,7 +70,7 @@ Bigint<bits>::Bigint(const char *const &x)
 template <unsigned int bits>
 Bigint<bits>::Bigint(const Bigint &x)
 {
-    storage = new unsigned int[bits / (sizeof(unsigned int) * 8)]{0};
+    storage = new unsigned int[bits / (sizeof(unsigned int) * 8)];
     std::memcpy(storage, x.storage, bits / 8);
 }
 template <unsigned int bits>
@@ -106,8 +106,8 @@ template <unsigned int bits>
 Bigint<bits> &Bigint<bits>::operator=(const Bigint &x)
 {
     delete[] storage;
-    storage = new unsigned int[bits / (sizeof(unsigned int) * 8)]{0};
-    std::memcpy(storage, x.storage, sizeof(x.storage) * sizeof(unsigned int));
+    storage = new unsigned int[bits / (sizeof(unsigned int) * 8)];
+    std::memcpy(storage, x.storage, bits / 8);
     return *this;
 }
 template <unsigned int bits>
@@ -138,6 +138,18 @@ bool Bigint<bits>::operator<(const Bigint &x) const
         if (storage[i] != 0 || x[i] != 0)
         {
             return storage[i] < x[i];
+        }
+    }
+    return false;
+}
+template <unsigned int bits>
+bool Bigint<bits>::operator>(const Bigint &x) const
+{
+    for (int i = bits / (sizeof(unsigned int) * 8) - 1; i >= 0; --i)
+    {
+        if (storage[i] != 0 || x[i] != 0)
+        {
+            return storage[i] > x[i];
         }
     }
     return false;
@@ -224,7 +236,7 @@ template <unsigned int bits>
 Bigint<bits> Bigint<bits>::operator/(const Bigint &x) const
 {
     if (*this < x)
-        return Bigint();
+        return *this;
     unsigned int bd = this->num_bits() - x.num_bits();
     Bigint rem(*this);
     Bigint quo;
@@ -257,7 +269,7 @@ template <unsigned int bits>
 Bigint<bits> Bigint<bits>::operator%(const Bigint &x) const
 {
     if (*this < x)
-        return Bigint();
+        return *this;
     unsigned int bd = this->num_bits() - x.num_bits();
     Bigint rem(*this);
     Bigint c(x);

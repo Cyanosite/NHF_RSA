@@ -10,14 +10,15 @@
 #include "bigint.h"
 class Message
 {
-    std::vector<Bigint<4096>> message;
+    std::vector<Bigint<2048> > message;
     bool is_encrypted;
-    Bigint<4096> public_key;
-    Bigint<4096> private_keys[2];
+    Bigint<2048> public_key;
+    Bigint<2048> primes[2];
+    Bigint<2048> private_key;
 
 public:
-    Message() : is_encrypted(false), public_key(), private_keys() {}
-    Message(const char *text) : message(), is_encrypted(false), public_key(), private_keys()
+    Message() : message(), is_encrypted(false), primes() {}
+    Message(const char *text) : message(), is_encrypted(false), primes()
     {
         for (unsigned short i = 0; i < strlen(text); ++i)
         {
@@ -26,32 +27,35 @@ public:
     }
     void encrypt()
     {
-        Bigint<4096> e(65537);
+        Bigint<2048> one(1);
+        Bigint<2048> e(3);
         for (unsigned short i = 0; i < 2; ++i)
         {
-            Bigint<4096> prime;
+            Bigint<2048> prime;
             do
             {
-                prime.rng(2048);
+                prime.rng(32);
             } while (!prime_check(prime));
-            private_keys[i] = prime;
+            std::cout << "prime found: " << prime << std::endl;
+            primes[i] = prime;
         }
-        std::cout << private_keys[0] << "\n"
-                  << private_keys[1] << std::endl;
-        public_key = private_keys[0] * private_keys[1];
-        for (std::vector<Bigint<4096>>::iterator i = message.begin(); i < message.end(); ++i)
+        public_key = primes[0] * primes[1];
+        private_key = (primes[0] - one) * (primes[1] - one);
+        std::cout << "public key: " << public_key << std::endl;
+        for (std::vector<Bigint<2048> >::iterator i = message.begin(); i < message.end(); ++i)
         {
-            *i = exponentiation(public_key, *i, e);
+            *i = exponentiation(*i, e, public_key);
         }
+        is_encrypted = true;
     }
     void decrypt()
     {
-        Bigint<4096> e(65537);
-        Bigint<4096> one(1);
-        Bigint<4096> decryption_key = congruence(e, one, (private_keys[0] - 1) * (private_keys[1] - 1));
-        for (std::vector<Bigint<4096>>::iterator i = message.begin(); i < message.end(); ++i)
+        Bigint<2048> e(3);
+        Bigint<2048> decryption_key(inverse(e, private_key));
+        std::cout << "decryption key = " << decryption_key << std::endl;
+        for (std::vector<Bigint<2048> >::iterator i = message.begin(); i < message.end(); ++i)
         {
-            *i = exponentiation(public_key, *i, decryption_key);
+            *i = exponentiation(*i, decryption_key, public_key);
         }
     }
     friend std::ostream &operator<<(std::ostream &, Message &);
@@ -59,9 +63,9 @@ public:
 };
 std::ostream &operator<<(std::ostream &os, Message &x)
 {
-    for (std::vector<Bigint<4096>>::iterator i = x.message.begin(); i < x.message.end(); ++i)
+    for (std::vector<Bigint<2048> >::iterator i = x.message.begin(); i < x.message.end(); ++i)
     {
-        os << (char)i->storage[0];
+        os << *i << ",";
     }
     return os;
 }
