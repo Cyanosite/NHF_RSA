@@ -346,7 +346,6 @@ template <unsigned int bits>
 void Bigint<bits>::rng(const unsigned int &x)
 {
     std::random_device rd;
-
     if (x == 0)
     {
         unsigned int n = bits / (sizeof(unsigned int) * 8);
@@ -358,12 +357,10 @@ void Bigint<bits>::rng(const unsigned int &x)
     else
     {
         unsigned int n = x / (sizeof(unsigned int) * 8);
-        unsigned int rem = 32 - (x % (sizeof(unsigned int) * 8));
         for (unsigned short i = 0; i < n; ++i)
         {
             this->storage[i] = rd();
         }
-        this->storage[n] = rd() & (0xFFFFFFFF >> rem);
     }
 }
 

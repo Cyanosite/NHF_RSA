@@ -3,7 +3,19 @@
 
 #include "memtrace.h"
 #include "bigint.h"
-
+template <unsigned int bits>
+Bigint<bits> gcd(Bigint<bits> a, Bigint<bits> b)
+{
+    Bigint<bits> temp;
+    Bigint<bits> null;
+    while (b != null)
+    {
+        temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a;
+}
 template <unsigned int bits>
 Bigint<bits> euclidean(Bigint<bits> m, Bigint<bits> a)
 {
@@ -78,7 +90,7 @@ bool prime_check(Bigint<bits> m)
         a.rng(high.num_bits());
         if (euclidean(m, a) != one)
             return false;
-        if (exponentiation(m, a, high) != one)
+        if (exponentiation(a, high, m) != one)
             return false;
     }
     return true;

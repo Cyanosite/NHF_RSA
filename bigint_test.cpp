@@ -155,20 +155,23 @@ int main()
     END
     TEST(Algorithm, inverse 2)
     {
-        Bigint<> e("865d98df4f0be16466b1");
-        Bigint<> m("1ae09926bc4aec40ab4e8916c56f023fb92b");
-        Bigint<> result("d133bc208ff54618ad91d792f46a4b31957");
+        Bigint<1024> e("865d98df4f0be16466b1");
+        Bigint<1024> m("1ae09926bc4aec40ab4e8916c56f023fb92b");
+        Bigint<1024> result("d133bc208ff54618ad91d792f46a4b31957");
         EXPECT_EQ(result, inverse(e, m)) << "inverse 2 failed";
     }
     END
     TEST(RSA, encryption and decryption)
     {
+        Message equal("Hello World");
         Message my_message("Hello World");
+        my_message = equal;
         std::cout << my_message << std::endl;
         my_message.encrypt();
         std::cout << my_message << std::endl;
         my_message.decrypt();
         std::cout << my_message << std::endl;
+        EXPECT_EQ(equal, my_message);
     }
     END return 0;
 }
