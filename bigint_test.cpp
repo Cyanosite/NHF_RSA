@@ -19,15 +19,6 @@ int main()
         EXPECT_EQ(0x9ABCDEF1U, x[0]) << "ctr from string failed";
     }
     END
-    // on copy, the storage pointers should equal as only the clone method makes a new array
-    // TODO: MAKE IT WORK THIS WAY
-    /*TEST(Copy constructor, x = 123456789ABCDEF1)
-    {
-        Bigint<128> x("123456789ABCDEF1");
-        EXPECT_EQ(x[1], 0x12345678U) << "ctr from string failed";
-        EXPECT_EQ(x[0], 0x9ABCDEF1U) << "ctr from string failed";
-    }
-    END*/
     TEST(How many bits to represent, x = 123456789ABCDEF123456789ABCDEF)
     {
         Bigint<256> x("123456789ABCDEF123456789ABCDEF");
@@ -55,12 +46,31 @@ int main()
         EXPECT_EQ(res, x + y) << "addition failed";
     }
     END
+    TEST(Operation, addition_overflow)
+    {
+        unsigned long long int x = 0xFFFFFFFFFFFFFFFF;
+        Bigint<64> y("FFFFFFFFFFFFFFFF");
+        Bigint<64> one(1);
+        Bigint<64> res(x + 1);
+        EXPECT_EQ(res, y + one) << "addition_overflow failed";
+    }
+    END
     TEST(Operation, subtraction)
     {
         Bigint<256> x("bcd52348edf0909349819d8c881391812b");
         Bigint<256> y("23497ab638923c8934dfe231988");
         Bigint<256> res("bcd52346b958e52fc05dd4f93a156e67a3");
         EXPECT_EQ(res, x - y) << "subtraction failed";
+    }
+    END
+    TEST(Operation, subtraction_underflow)
+    {
+
+        unsigned long long int x = 0;
+        Bigint<64> y;
+        Bigint<64> one(1);
+        Bigint<64> res(x - 1);
+        EXPECT_EQ(res, y - one) << "subtraction_underflow failed";
     }
     END
     TEST(Operation, multiplication)
@@ -145,12 +155,10 @@ int main()
     END
     TEST(Algorithm, inverse 2)
     {
-        Bigint<1024> x0("a3917605");
-        Bigint<1024> x1("8d8b2743");
-        Bigint<1024> e(3);
-        Bigint<1024> one(1);
-        Bigint<1024> result("7576f96");
-        EXPECT_EQ(result, inverse(e, ((x0 - one) * (x1 - one)))) << "inverse 2 failed";
+        Bigint<> e("865d98df4f0be16466b1");
+        Bigint<> m("1ae09926bc4aec40ab4e8916c56f023fb92b");
+        Bigint<> result("d133bc208ff54618ad91d792f46a4b31957");
+        EXPECT_EQ(result, inverse(e, m)) << "inverse 2 failed";
     }
     END
     TEST(RSA, encryption and decryption)

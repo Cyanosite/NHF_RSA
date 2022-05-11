@@ -358,10 +358,12 @@ void Bigint<bits>::rng(const unsigned int &x)
     else
     {
         unsigned int n = x / (sizeof(unsigned int) * 8);
+        unsigned int rem = 32 - (x % (sizeof(unsigned int) * 8));
         for (unsigned short i = 0; i < n; ++i)
         {
             this->storage[i] = rd();
         }
+        this->storage[n] = rd() & (0xFFFFFFFF >> rem);
     }
 }
 

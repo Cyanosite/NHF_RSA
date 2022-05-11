@@ -35,7 +35,6 @@ Bigint<bits> exponentiation(Bigint<bits> a, Bigint<bits> b, Bigint<bits> m)
     }
     return c;
 }
-// make this work and it's done.
 template <unsigned int bits>
 Bigint<bits> inverse(Bigint<bits> a, Bigint<bits> b)
 {
@@ -46,11 +45,6 @@ Bigint<bits> inverse(Bigint<bits> a, Bigint<bits> b)
     bool x1_sign = false;
     while (a > 1)
     {
-        /*Bigint<bits> quotient(r / newr);
-        t = newt;
-        newt = t - (quotient * newt);
-        r = newr;
-        newr = r - (quotient * newr);*/
         Bigint<bits> q(a / b);
         Bigint<bits> t = b;
         b = a % b;
