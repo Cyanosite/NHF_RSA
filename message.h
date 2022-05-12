@@ -8,6 +8,7 @@
 #include <string>
 #include "algorithms.h"
 #include "bigint.h"
+// template <unsigned int key_size>
 class Message
 {
     std::vector<Bigint<1024> > message;
@@ -18,13 +19,11 @@ class Message
     Bigint<1024> private_key;
 
 public:
-    Message() : message(), is_encrypted(false), primes() {}
-    Message(const char *text) : message(), is_encrypted(false), primes()
+    Message() : is_encrypted(false) {}
+    Message(const char *text) : is_encrypted(false)
     {
-        for (unsigned short i = 0; i < strlen(text); ++i)
-        {
-            message.push_back(text[i]);
-        }
+        message.resize(strlen(text));
+        std::copy(text, text + strlen(text), message.begin());
     }
     Message &operator=(const Message &x)
     {
@@ -45,7 +44,7 @@ public:
             Bigint<1024> my_prime;
             do
             {
-                my_prime.rng(128);
+                my_prime.rng(64);
             } while (!prime_check(my_prime));
             std::cout << "prime found: " << my_prime << std::endl;
             primes[i] = my_prime;
@@ -55,7 +54,7 @@ public:
         Bigint<1024> one(1);
         do
         {
-            c.rng(64);
+            c.rng(32);
         } while (!prime_check(c) || gcd(c, public_key) != one);
         std::cout << "c: " << c << std::endl;
 
