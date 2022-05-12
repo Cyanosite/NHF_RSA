@@ -8,15 +8,24 @@
 #include <string>
 #include "algorithms.h"
 #include "bigint.h"
-// template <unsigned int key_size>
+
+//#define DEBUG
+
+enum message_size
+{
+    bigint_size = 256,
+    key_size = 128,
+    prime_size = 64,
+    c_size = 32,
+};
 class Message
 {
-    std::vector<Bigint<1024> > message;
+    std::vector<Bigint<bigint_size> > message;
+    Bigint<bigint_size> primes[2];
+    Bigint<bigint_size> c;
+    Bigint<bigint_size> public_key;
+    Bigint<bigint_size> private_key;
     bool is_encrypted;
-    Bigint<1024> c;
-    Bigint<1024> public_key;
-    Bigint<1024> primes[2];
-    Bigint<1024> private_key;
 
 public:
     Message() : is_encrypted(false) {}
@@ -25,75 +34,68 @@ public:
         message.resize(strlen(text));
         std::copy(text, text + strlen(text), message.begin());
     }
-    Message &operator=(const Message &x)
+    Message(std::string &string) : is_encrypted(false)
     {
-        message = x.message;
-        return *this;
+        message.resize(string.length());
+        std::copy(string.begin(), string.end(), message.begin());
     }
+    // teszteléshez
     bool operator==(const Message &x) const
     {
-        for (int i = 0; i < message.size(); ++i)
-            if (message[i] != x.message[i])
-                return false;
-        return true;
+        return message == x.message;
     }
     void encrypt()
     {
         for (unsigned short i = 0; i < 2; ++i)
         {
-            Bigint<1024> my_prime;
+            Bigint<bigint_size> my_prime;
             do
             {
-                my_prime.rng(64);
+                my_prime.rng(prime_size);
             } while (!prime_check(my_prime));
+#ifdef DEBUG
             std::cout << "prime found: " << my_prime << std::endl;
+#endif
             primes[i] = my_prime;
         }
         public_key = primes[0] * primes[1];
-        Bigint<1024> null;
-        Bigint<1024> one(1);
+        Bigint<bigint_size> null;
+        Bigint<bigint_size> one(1);
         do
         {
-            c.rng(32);
+            c.rng(c_size);
         } while (!prime_check(c) || gcd(c, public_key) != one);
+#ifdef DEBUG
         std::cout << "c: " << c << std::endl;
-
         std::cout << "public key: " << public_key << std::endl;
-        for (int i = 0; i < message.size(); ++i)
-            message[i] = exponentiation(message[i], c, public_key);
+#endif
+        for (std::vector<Bigint<bigint_size> >::iterator i = message.begin(); i < message.end();)
+            *i++ = exponentiation(*i, c, public_key);
+        is_encrypted = true;
     }
     void decrypt()
     {
-        Bigint<1024> one(1);
-        Bigint<1024> temp1(primes[0] - one);
-        Bigint<1024> temp2(primes[1] - one);
-        std::cout << "gcd: " << gcd(temp1, temp2) << std::endl;
+        Bigint<bigint_size> one(1);
+        Bigint<bigint_size> temp1(primes[0] - one);
+        Bigint<bigint_size> temp2(primes[1] - one);
         private_key = (temp1 * temp2) / gcd(temp1, temp2);
+        Bigint<bigint_size> decryption_key = inverse(c, private_key);
+#ifdef DEBUG
+        std::cout << "gcd: " << gcd(temp1, temp2) << std::endl;
         std::cout << "private_key: " << private_key << std::endl;
-        Bigint<1024> decryption_key = inverse(c, private_key);
         std::cout << "decryption key: " << decryption_key << std::endl;
-        for (int i = 0; i < message.size(); ++i)
-            message[i] = exponentiation(message[i], decryption_key, public_key);
+#endif
+        for (std::vector<Bigint<bigint_size> >::iterator i = message.begin(); i < message.end();)
+            *i++ = exponentiation(*i, decryption_key, public_key);
+        is_encrypted = false;
     }
     friend std::ostream &operator<<(std::ostream &, Message &);
-    friend std::istream &operator>>(std::istream &, Message &);
 };
 std::ostream &operator<<(std::ostream &os, Message &x)
 {
-    for (int i = 0; i < x.message.size(); ++i)
-        os << (char)x.message[i][0];
+    for (std::vector<Bigint<bigint_size> >::iterator i = x.message.begin(); i < x.message.end(); ++i)
+        os << (char)(i->storage[0]);
     return os;
-}
-std::istream &operator>>(std::istream &is, Message &x)
-{
-    std::string word;
-    is >> word;
-    x.message.clear();
-    for (std::string::iterator i = word.begin(); i < word.end(); ++i)
-    {
-        x.message.push_back(*i);
-    }
-    return is;
 }
 
 #endif

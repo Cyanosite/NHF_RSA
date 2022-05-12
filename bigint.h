@@ -4,22 +4,28 @@
 #include <iostream>
 #include <iomanip>
 #include <random>
+
+/**
+ * @tparam bits the number of bits used for storage.
+ * If bits % 32 != 0: it will be rounded downwards to the nearest multiple of 32.
+ */
 template <unsigned int bits = 64>
 struct Bigint
 {
+    // stores the number in a little-endian order
     unsigned int *storage;
     Bigint(const unsigned long long & = 0);
+    //
     Bigint(const char *const &);
     Bigint(const Bigint &);
-    ~Bigint();
     Bigint &operator=(const Bigint &);
+    // randomizes the number up to (input/32) bits
+    void rng(const unsigned int & = 0);
     bool operator==(const Bigint &) const;
     bool operator!=(const Bigint &) const;
     bool operator<(const Bigint &) const;
-    bool operator<=(const Bigint &) const;
     bool operator>(const Bigint &) const;
-    bool operator>=(const Bigint &) const;
-    unsigned int &operator[](const unsigned int &) const;
+    // returns the number of bits used to represent the number
     unsigned int num_bits() const;
     bool is_even() const;
     bool is_odd() const;
@@ -30,24 +36,27 @@ struct Bigint
     Bigint operator%(const Bigint &) const;
     Bigint operator<<(const unsigned int &) const;
     Bigint operator>>(const unsigned int &) const;
-    void rng(const unsigned int & = 0);
+    ~Bigint();
 };
+
 template <unsigned int bits>
 Bigint<bits>::Bigint(const unsigned long long &x)
 {
-    if (bits % (sizeof(unsigned int) * 8) != 0)
-        throw("wrong size");
     storage = new unsigned int[bits / (sizeof(unsigned int) * 8)]{0};
     storage[0] = x;
     storage[1] = x >> (sizeof(unsigned int) * 8);
 }
+
+/**
+ * @param x C string with a '\0' null terminator.
+ * It may only consist a hexadecimal number (letter capitalization doesn't matter).
+ */
 template <unsigned int bits>
 Bigint<bits>::Bigint(const char *const &x)
 {
-    if (bits % (sizeof(unsigned int) * 8) != 0)
-        throw("wrong size");
     storage = new unsigned int[bits / (sizeof(unsigned int) * 8)]{0};
     unsigned short number_of_runs = strlen(x) / 8;
+    // a run consists of reading 8 hexadecimal digits enough to fill 32 bits
     if (number_of_runs > 1)
     {
         const char *startpos = x + strlen(x) * sizeof(char) - 8 * sizeof(char);
@@ -67,41 +76,14 @@ Bigint<bits>::Bigint(const char *const &x)
     else
         sscanf(x, "%X", &storage[0]);
 }
+
 template <unsigned int bits>
 Bigint<bits>::Bigint(const Bigint &x)
 {
     storage = new unsigned int[bits / (sizeof(unsigned int) * 8)];
     std::memcpy(storage, x.storage, bits / 8);
 }
-template <unsigned int bits>
-Bigint<bits>::~Bigint()
-{
-    delete[] storage;
-}
-template <unsigned int bits>
-std::ostream &operator<<(std::ostream &os, const Bigint<bits> &x)
-{
-    unsigned short size = bits / (sizeof(unsigned int) * 8);
-    os << std::hex;
-    bool isnull = true;
-    for (int i = size - 1; i >= 0; --i)
-    {
-        if (isnull)
-        {
-            if (x[i] != 0)
-            {
-                os << (unsigned int)x[i];
-                isnull = false;
-            }
-        }
-        else
-            os << std::setw(8) << std::setfill('0') << (unsigned int)x[i];
-    }
-    if (isnull)
-        os << 0;
-    os << std::dec;
-    return os;
-}
+
 template <unsigned int bits>
 Bigint<bits> &Bigint<bits>::operator=(const Bigint &x)
 {
@@ -110,6 +92,34 @@ Bigint<bits> &Bigint<bits>::operator=(const Bigint &x)
     std::memcpy(storage, x.storage, bits / 8);
     return *this;
 }
+
+/**
+ * @param size_max upper limit of randomization in terms of bit size.
+ * If (size_max = 0) => the entire size of its storage will be randomized
+ * @return randomized output (size in bits = size_max/32) using std::random_device
+ */
+template <unsigned int bits>
+void Bigint<bits>::rng(const unsigned int &size_max)
+{
+    std::random_device rd;
+    if (size_max == 0)
+    {
+        unsigned int n = bits / (sizeof(unsigned int) * 8);
+        for (unsigned short i = 0; i < n; ++i)
+        {
+            this->storage[i] = rd();
+        }
+    }
+    else
+    {
+        unsigned int n = size_max / (sizeof(unsigned int) * 8);
+        for (unsigned short i = 0; i < n; ++i)
+        {
+            this->storage[i] = rd();
+        }
+    }
+}
+
 template <unsigned int bits>
 bool Bigint<bits>::operator==(const Bigint &x) const
 {
@@ -120,6 +130,7 @@ bool Bigint<bits>::operator==(const Bigint &x) const
     }
     return true;
 }
+
 template <unsigned int bits>
 bool Bigint<bits>::operator!=(const Bigint &x) const
 {
@@ -130,6 +141,7 @@ bool Bigint<bits>::operator!=(const Bigint &x) const
     }
     return false;
 }
+
 template <unsigned int bits>
 bool Bigint<bits>::operator<(const Bigint &x) const
 {
@@ -142,6 +154,7 @@ bool Bigint<bits>::operator<(const Bigint &x) const
     }
     return false;
 }
+
 template <unsigned int bits>
 bool Bigint<bits>::operator>(const Bigint &x) const
 {
@@ -154,11 +167,10 @@ bool Bigint<bits>::operator>(const Bigint &x) const
     }
     return false;
 }
-template <unsigned int bits>
-unsigned int &Bigint<bits>::operator[](const unsigned int &i) const
-{
-    return storage[i];
-}
+
+/**
+ * @return the number of bits sufficient to represent *this
+ */
 template <unsigned int bits>
 unsigned int Bigint<bits>::num_bits() const
 {
@@ -167,16 +179,19 @@ unsigned int Bigint<bits>::num_bits() const
         --i;
     return storage[i] == 0 ? i * 8 * sizeof(unsigned int) : (i + 1) * 8 * sizeof(unsigned int) - __builtin_clz(storage[i]);
 }
+
 template <unsigned int bits>
 bool Bigint<bits>::is_even() const
 {
     return !(this->storage[0] & 1);
 }
+
 template <unsigned int bits>
 bool Bigint<bits>::is_odd() const
 {
     return this->storage[0] & 1;
 }
+
 template <unsigned int bits>
 Bigint<bits> Bigint<bits>::operator+(const Bigint &x) const
 {
@@ -186,11 +201,13 @@ Bigint<bits> Bigint<bits>::operator+(const Bigint &x) const
     for (unsigned int i = 0; i < bits / (sizeof(unsigned int) * 8); ++i)
     {
         temp = (unsigned long long)storage[i] + (unsigned long long)x.storage[i] + (unsigned long long)carry;
+        // the next carry will be the temp shifted down by 32
         carry = temp >> (8 * sizeof(unsigned int));
         res[i] = (unsigned int)temp;
     }
     return res;
 }
+
 template <unsigned int bits>
 Bigint<bits> Bigint<bits>::operator-(const Bigint &x) const
 {
@@ -205,6 +222,7 @@ Bigint<bits> Bigint<bits>::operator-(const Bigint &x) const
     }
     return res;
 }
+
 template <unsigned int bits>
 Bigint<bits> Bigint<bits>::operator*(const Bigint &x) const
 {
@@ -228,10 +246,9 @@ Bigint<bits> Bigint<bits>::operator*(const Bigint &x) const
                 break;
         }
     }
-    if (carry)
-        throw("overflow");
     return res;
 }
+
 template <unsigned int bits>
 Bigint<bits> Bigint<bits>::operator/(const Bigint &x) const
 {
@@ -265,6 +282,7 @@ Bigint<bits> Bigint<bits>::operator/(const Bigint &x) const
     }
     return quo;
 }
+
 template <unsigned int bits>
 Bigint<bits> Bigint<bits>::operator%(const Bigint &x) const
 {
@@ -316,6 +334,7 @@ Bigint<bits> Bigint<bits>::operator<<(const unsigned int &shift) const
     ret.storage[full_shifts] = storage[0] << lshift;
     return ret;
 }
+
 template <unsigned int bits>
 Bigint<bits> Bigint<bits>::operator>>(const unsigned int &shift) const
 {
@@ -342,26 +361,37 @@ Bigint<bits> Bigint<bits>::operator>>(const unsigned int &shift) const
     }
     return ret;
 }
+
 template <unsigned int bits>
-void Bigint<bits>::rng(const unsigned int &x)
+Bigint<bits>::~Bigint()
 {
-    std::random_device rd;
-    if (x == 0)
+    delete[] storage;
+}
+
+// iostream operators
+template <unsigned int bits>
+std::ostream &operator<<(std::ostream &os, const Bigint<bits> &x)
+{
+    unsigned short size = bits / (sizeof(unsigned int) * 8);
+    os << std::hex;
+    bool isnull = true;
+    for (int i = size - 1; i >= 0; --i)
     {
-        unsigned int n = bits / (sizeof(unsigned int) * 8);
-        for (unsigned short i = 0; i < n; ++i)
+        if (isnull)
         {
-            this->storage[i] = rd();
+            if (x[i] != 0)
+            {
+                os << (unsigned int)x[i];
+                isnull = false;
+            }
         }
+        else
+            os << std::setw(8) << std::setfill('0') << (unsigned int)x[i];
     }
-    else
-    {
-        unsigned int n = x / (sizeof(unsigned int) * 8);
-        for (unsigned short i = 0; i < n; ++i)
-        {
-            this->storage[i] = rd();
-        }
-    }
+    if (isnull)
+        os << 0;
+    os << std::dec;
+    return os;
 }
 
 #endif

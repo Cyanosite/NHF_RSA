@@ -9,14 +9,14 @@ int main()
     TEST(Constructor from integer, x = ABCDEF98)
     {
         Bigint<128> x(0xABCDEF98);
-        EXPECT_EQ(0xABCDEF98U, x[0]) << "ctr from int failed";
+        EXPECT_EQ(0xABCDEF98U, x.storage[0]) << "ctr from int failed";
     }
     END
     TEST(Constructor from string, x = 123456789ABCDEF1)
     {
         Bigint<128> x("123456789ABCDEF1");
-        EXPECT_EQ(0x12345678U, x[1]) << "ctr from string failed";
-        EXPECT_EQ(0x9ABCDEF1U, x[0]) << "ctr from string failed";
+        EXPECT_EQ(0x12345678U, x.storage[1]) << "ctr from string failed";
+        EXPECT_EQ(0x9ABCDEF1U, x.storage[0]) << "ctr from string failed";
     }
     END
     TEST(How many bits to represent, x = 123456789ABCDEF123456789ABCDEF)
@@ -164,8 +164,8 @@ int main()
     TEST(RSA, encryption and decryption)
     {
         Message equal("Hello World");
-        Message my_message("Hello World");
-        my_message = equal;
+        std::string my_string("Hello World");
+        Message my_message(my_string);
         std::cout << my_message << std::endl;
         my_message.encrypt();
         std::cout << my_message << std::endl;
