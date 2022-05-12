@@ -147,9 +147,9 @@ bool Bigint<bits>::operator<(const Bigint &x) const
 {
     for (int i = bits / (sizeof(unsigned int) * 8) - 1; i >= 0; --i)
     {
-        if (storage[i] != 0 || x[i] != 0)
+        if (storage[i] != 0 || x.storage[i] != 0)
         {
-            return storage[i] < x[i];
+            return storage[i] < x.storage[i];
         }
     }
     return false;
@@ -160,9 +160,9 @@ bool Bigint<bits>::operator>(const Bigint &x) const
 {
     for (int i = bits / (sizeof(unsigned int) * 8) - 1; i >= 0; --i)
     {
-        if (storage[i] != 0 || x[i] != 0)
+        if (storage[i] != 0 || x.storage[i] != 0)
         {
-            return storage[i] > x[i];
+            return storage[i] > x.storage[i];
         }
     }
     return false;
@@ -203,7 +203,7 @@ Bigint<bits> Bigint<bits>::operator+(const Bigint &x) const
         temp = (unsigned long long)storage[i] + (unsigned long long)x.storage[i] + (unsigned long long)carry;
         // the next carry will be the temp shifted down by 32
         carry = temp >> (8 * sizeof(unsigned int));
-        res[i] = (unsigned int)temp;
+        res.storage[i] = (unsigned int)temp;
     }
     return res;
 }
@@ -218,7 +218,7 @@ Bigint<bits> Bigint<bits>::operator-(const Bigint &x) const
     {
         temp = (unsigned long long)storage[i] - ((unsigned long long)x.storage[i] + (unsigned long long)borrow);
         borrow = temp >> (8 * sizeof(unsigned long long) - 1);
-        res[i] = (unsigned int)temp;
+        res.storage[i] = (unsigned int)temp;
     }
     return res;
 }
@@ -238,8 +238,8 @@ Bigint<bits> Bigint<bits>::operator*(const Bigint &x) const
             k = i + j;
             if (k < bits / (sizeof(unsigned int) * 8))
             {
-                temp = (unsigned long long)res[k] + (unsigned long long)storage[i] * (unsigned long long)x.storage[j] + (unsigned long long)carry;
-                res[k] = (unsigned int)temp;
+                temp = (unsigned long long)res.storage[k] + (unsigned long long)storage[i] * (unsigned long long)x.storage[j] + (unsigned long long)carry;
+                res.storage[k] = (unsigned int)temp;
                 carry = temp >> (8 * sizeof(unsigned int));
             }
             else
@@ -379,14 +379,14 @@ std::ostream &operator<<(std::ostream &os, const Bigint<bits> &x)
     {
         if (isnull)
         {
-            if (x[i] != 0)
+            if (x.storage[i] != 0)
             {
-                os << (unsigned int)x[i];
+                os << (unsigned int)x.storage[i];
                 isnull = false;
             }
         }
         else
-            os << std::setw(8) << std::setfill('0') << (unsigned int)x[i];
+            os << std::setw(8) << std::setfill('0') << (unsigned int)x.storage[i];
     }
     if (isnull)
         os << 0;

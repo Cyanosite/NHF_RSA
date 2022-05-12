@@ -39,7 +39,7 @@ public:
         message.resize(string.length());
         std::copy(string.begin(), string.end(), message.begin());
     }
-    // teszteléshez
+    // for testing purposes
     bool operator==(const Message &x) const
     {
         return message == x.message;
@@ -64,7 +64,7 @@ public:
         do
         {
             c.rng(c_size);
-        } while (!prime_check(c) || gcd(c, public_key) != one);
+        } while (!prime_check(c) || gcd(public_key, c) != one);
 #ifdef DEBUG
         std::cout << "c: " << c << std::endl;
         std::cout << "public key: " << public_key << std::endl;

@@ -111,20 +111,20 @@ int main()
         EXPECT_EQ(res, x >> 70) << "right shift failed";
     }
     END
-    TEST(Algorithm, euclidean)
+    TEST(Algorithm, gcd)
     {
         Bigint<> m(1238);
         Bigint<> a(567);
         Bigint<> one(1);
-        EXPECT_EQ(one, euclidean(m, a)) << "euclidean failed";
+        EXPECT_EQ(one, gcd(m, a)) << "euclidean failed";
     }
     END
-    TEST(Algorithm, euclidean 2)
+    TEST(Algorithm, gcd 2)
     {
         Bigint<256> m("84fb24809d95c5315fb061d16fe016c0e55bd085da79a7c3cda921b3f3c364");
         Bigint<256> a("3a283606d4325f6a8fdedec81289481c8");
         Bigint<256> four(4);
-        EXPECT_EQ(four, euclidean(m, a)) << "euclidean 2 failed";
+        EXPECT_EQ(four, gcd(m, a)) << "euclidean 2 failed";
     }
     END
     TEST(Algorithm, exponentiation)

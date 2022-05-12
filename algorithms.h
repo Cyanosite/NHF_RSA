@@ -3,6 +3,13 @@
 
 #include "memtrace.h"
 #include "bigint.h"
+
+/**
+ * Euclidean algorithm finding the greatest common divisor of the given inputs.
+ * @tparam bits number of bits used to store the integers, usually ommited in functions calls.
+ * @param a
+ * @return Greatest common divisor of a and b.
+ */
 template <unsigned int bits>
 Bigint<bits> gcd(Bigint<bits> a, Bigint<bits> b)
 {
@@ -16,20 +23,15 @@ Bigint<bits> gcd(Bigint<bits> a, Bigint<bits> b)
     }
     return a;
 }
-template <unsigned int bits>
-Bigint<bits> euclidean(Bigint<bits> m, Bigint<bits> a)
-{
-    Bigint<bits> r;
-    const Bigint<bits> null;
-    while (true)
-    {
-        r = m % a;
-        if (r == null)
-            return a;
-        m = a;
-        a = r;
-    }
-}
+
+/**
+ * Modular exponentiation algorithm.
+ * @tparam bits number of bits used to store the integers, usually ommited in functions calls.
+ * @param a must be less than m
+ * @param b must be greater than 0
+ * @param m must be larger than a
+ * @return aˆb % m
+ */
 template <unsigned int bits>
 Bigint<bits> exponentiation(Bigint<bits> a, Bigint<bits> b, Bigint<bits> m)
 {
@@ -47,6 +49,13 @@ Bigint<bits> exponentiation(Bigint<bits> a, Bigint<bits> b, Bigint<bits> m)
     }
     return c;
 }
+
+/**
+ * Modular multiplicative inverse algorithm (using extended Euclidean algorithm).
+ * A modular multiplicative inverse of an integer a is an integer x such that the product ax is congruent to 1 with respect to the modulus m.
+ * @tparam bits number of bits used to store the integers, usually ommited in functions calls.
+ * @return a*t congruent 1 (mod b)
+ */
 template <unsigned int bits>
 Bigint<bits> inverse(Bigint<bits> a, Bigint<bits> b)
 {
@@ -79,6 +88,13 @@ Bigint<bits> inverse(Bigint<bits> a, Bigint<bits> b)
     }
     return x1_sign ? b0 - x1 : x1;
 }
+
+/**
+ * Fermat primality test algorithm.
+ * @tparam bits number of bits used to store the integers, usually ommited in functions calls.
+ * @param m the integer to test
+ * @return True if m is a prime.
+ */
 template <unsigned int bits>
 bool prime_check(Bigint<bits> m)
 {
@@ -88,7 +104,7 @@ bool prime_check(Bigint<bits> m)
     {
         Bigint<bits> a;
         a.rng(high.num_bits());
-        if (euclidean(m, a) != one)
+        if (gcd(m, a) != one)
             return false;
         if (exponentiation(a, high, m) != one)
             return false;
