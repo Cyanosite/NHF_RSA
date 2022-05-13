@@ -3,8 +3,8 @@ SRCS = rsa_test.cpp memtrace.cpp
 HDRS = bigint.h algorithms.h message.h gtest_lite.h memtrace.h
 OBJS = $(SRCS:.cpp=.o)
 
-CXXFLAGS = -ggdb -std=c++11 -pedantic -Wall -DMEMTRACE
-#CXXFLAGS = -Ofast -std=c++11 -pedantic
+CXXFLAGS = -ggdb -std=c++17 -Wall -Werror -DMEMTRACE
+#CXXFLAGS = -Ofast -std=c++17
 
 $(PROG): $(OBJS) 
 	$(CXX) -o $(PROG) $(OBJS)
