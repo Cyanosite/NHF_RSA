@@ -55,6 +55,7 @@ public:
             private_key = x.private_key;
             is_encrypted = x.is_encrypted;
         }
+        return *this;
     }
 
     /**
