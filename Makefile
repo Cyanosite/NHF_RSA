@@ -1,5 +1,5 @@
 PROG = main
-SRCS = bigint_test.cpp memtrace.cpp
+SRCS = rsa_test.cpp memtrace.cpp
 HDRS = bigint.h algorithms.h message.h gtest_lite.h memtrace.h
 OBJS = $(SRCS:.cpp=.o)
 
