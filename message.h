@@ -18,9 +18,10 @@ enum message_size
     prime_size = 64,
     c_size = 32,
 };
+
 class Message
 {
-    std::vector<Bigint<bigint_size>> message;
+    std::vector<Bigint<bigint_size> > message;
     Bigint<bigint_size> primes[2];
     Bigint<bigint_size> c;
     Bigint<bigint_size> public_key;
@@ -42,7 +43,11 @@ public:
         std::copy(string.begin(), string.end(), message.begin());
     }
 
-    Message(const Message &x) : message(x.message), primes(x.primes), c(x.c), public_key(x.public_key), private_key(x.private_key), is_encrypted(x.is_encrypted) {}
+    Message(const Message &x) : message(x.message), c(x.c), public_key(x.public_key), private_key(x.private_key), is_encrypted(x.is_encrypted)
+    {
+        primes[0] = x.primes[0];
+        primes[1] = x.primes[1];
+    }
     Message &operator=(const Message &x)
     {
         if (this != &x)
@@ -84,7 +89,7 @@ public:
         Message res(*this);
         size_t message_size = message.size();
         res.message.resize(message_size + string.length());
-        std::copy(string.begin(), string.end(), res.message.at(message_size));
+        std::copy(string.begin(), string.end(), res.message.begin() + message_size);
         return res;
     }
 
@@ -95,7 +100,7 @@ public:
         Message res(*this);
         size_t message_size = message.size();
         res.message.resize(message_size + x.message.size());
-        std::copy(x.message.begin(), x.message.end(), res.message.at(message_size));
+        std::copy(x.message.begin(), x.message.end(), res.message.begin() + message_size);
         return res;
     }
 
@@ -130,7 +135,7 @@ public:
         std::cout << "c: " << c << std::endl;
         std::cout << "public key: " << public_key << std::endl;
 #endif
-        for (std::vector<Bigint<bigint_size>>::iterator i = message.begin(); i < message.end();)
+        for (std::vector<Bigint<bigint_size> >::iterator i = message.begin(); i < message.end();)
             *i++ = exponentiation(*i, c, public_key);
         is_encrypted = true;
     }
@@ -146,7 +151,7 @@ public:
         std::cout << "private_key: " << private_key << std::endl;
         std::cout << "decryption key: " << decryption_key << std::endl;
 #endif
-        for (std::vector<Bigint<bigint_size>>::iterator i = message.begin(); i < message.end();)
+        for (std::vector<Bigint<bigint_size> >::iterator i = message.begin(); i < message.end();)
             *i++ = exponentiation(*i, decryption_key, public_key);
         is_encrypted = false;
     }
@@ -155,7 +160,7 @@ public:
 
 std::ostream &operator<<(std::ostream &os, Message &x)
 {
-    for (std::vector<Bigint<bigint_size>>::iterator i = x.message.begin(); i < x.message.end(); ++i)
+    for (std::vector<Bigint<bigint_size> >::iterator i = x.message.begin(); i < x.message.end(); ++i)
         os << (char)(i->storage[0]);
     return os;
 }

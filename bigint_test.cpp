@@ -166,14 +166,15 @@ int main()
         Message equal("Hello World");
         std::string hello("Hello ");
         Message my_message(hello);
-        std::string my_string("Hello World");
-        Message my_message(my_string);
-        std::cout << my_message << std::endl;
-        my_message.encrypt();
-        std::cout << my_message << std::endl;
-        my_message.decrypt();
-        std::cout << my_message << std::endl;
-        EXPECT_EQ(equal, my_message);
+        std::string world("World");
+        my_message = my_message + world;
+        Message hello_world = my_message;
+        std::cout << hello_world << std::endl;
+        hello_world.encrypt();
+        std::cout << hello_world << std::endl;
+        hello_world.decrypt();
+        std::cout << hello_world << std::endl;
+        EXPECT_EQ(equal, hello_world);
     }
     END return 0;
 }
