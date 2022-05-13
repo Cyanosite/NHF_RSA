@@ -164,6 +164,8 @@ int main()
     TEST(RSA, encryption and decryption)
     {
         Message equal("Hello World");
+        std::string hello("Hello ");
+        Message my_message(hello);
         std::string my_string("Hello World");
         Message my_message(my_string);
         std::cout << my_message << std::endl;
