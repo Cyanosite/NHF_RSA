@@ -87,9 +87,12 @@ Bigint<bits>::Bigint(const Bigint &x)
 template <unsigned int bits>
 Bigint<bits> &Bigint<bits>::operator=(const Bigint &x)
 {
+    if (this != &x)
+    {
     delete[] storage;
     storage = new unsigned int[bits / (sizeof(unsigned int) * 8)];
     std::memcpy(storage, x.storage, bits / 8);
+    }
     return *this;
 }
 
@@ -271,8 +274,7 @@ Bigint<bits> Bigint<bits>::operator/(const Bigint &x) const
         if (d != 0)
         {
             rem = r;
-            r = quo;
-            r = r + e;
+            r = quo + e;
             quo = r;
         }
         if (bd-- == 0)
@@ -298,8 +300,8 @@ Bigint<bits> Bigint<bits>::operator%(const Bigint &x) const
     while (true)
     {
         r = rem - c;
-        unsigned int d = 1 - (r.storage[ms_part] >> bitsize_m_1);
-        if (d != 0)
+        unsigned int d = r.storage[ms_part] >> bitsize_m_1;
+        if (d == 0)
             rem = r;
         if (bd-- == 0)
             break;
