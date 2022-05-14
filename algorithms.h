@@ -1,8 +1,8 @@
 #ifndef ALGORITHMS_H
 #define ALGORITHMS_H
 
-#include "memtrace.h"
 #include "bigint.h"
+#include "memtrace.h"
 
 /**
  * Euclidean algorithm finding the greatest common divisor of the given inputs.

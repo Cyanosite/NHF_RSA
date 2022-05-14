@@ -1,8 +1,8 @@
-#include "memtrace.h"
 #include "gtest_lite.h"
 #include "bigint.h"
 #include "message.h"
 #include <iostream>
+#include "memtrace.h"
 
 int main()
 {

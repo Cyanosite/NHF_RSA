@@ -1,13 +1,13 @@
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
-#include "memtrace.h"
 #include <iostream>
 #include <vector>
 #include <cstring>
 #include <string>
 #include "algorithms.h"
 #include "bigint.h"
+#include "memtrace.h"
 
 //#define DEBUG
 
