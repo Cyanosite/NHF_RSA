@@ -1,7 +1,6 @@
 #ifndef ALGORITHMS_H
 #define ALGORITHMS_H
 
-#include "memtrace.h"
 #include "bigint.h"
 
 /**

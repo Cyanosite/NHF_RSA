@@ -52,9 +52,6 @@
 # include <iterator>
 # include <regex>
 #endif
-#ifdef MEMTRACE
-# include "memtrace.h"
-#endif
 
 // Két makró az egyes tesztek elé és mögé:
 // A két makró a kapcsos zárójelekkel egy új blokkot hoz létre, amiben
@@ -268,9 +265,6 @@ public:
     /// Teszt kezdete
     void begin(const char *n) {
         name = n; status = true;
-#ifdef MEMTRACE
-        ablocks = memtrace::allocated_blocks();
-#endif
 #ifndef CPORTA
         std::cerr << "\n---> " << name << std::endl;
 #endif // CPORTA
@@ -278,12 +272,7 @@ public:
     }
     /// Teszt vége
     std::ostream& end(bool memchk = false) {
-#ifdef MEMTRACE
-        if (memchk && ablocks != memtrace::allocated_blocks()) {
-            status = false;
-            return std::cerr << "** Lehet, hogy nem szabaditott fel minden memoriat! **" << std::endl;
-        }
-#endif
+
 #ifdef CPORTA
         if (!status)
 #endif // CPORTA
