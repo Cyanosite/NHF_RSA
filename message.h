@@ -5,9 +5,9 @@
 #include <vector>
 #include <cstring>
 #include <string>
+#include "memtrace.h"
 #include "algorithms.h"
 #include "bigint.h"
-#include "memtrace.h"
 
 //#define DEBUG
 
