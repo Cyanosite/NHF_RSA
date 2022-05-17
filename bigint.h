@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iomanip>
 #include <random>
+#include "memtrace.h"
 
 /**
  * @tparam bits the number of bits used for storage.
