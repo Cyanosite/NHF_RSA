@@ -1,8 +1,9 @@
 PROG = main
-SRCS = rsa_test.cpp
-HDRS = bigint.h algorithms.h message.h gtest.h
+SRCS = $(wildcard *.cpp)
+HDRS = $(wildcard *.h)
 OBJS = $(SRCS:.cpp=.o)
-CXXFLAGS = -Ofast -std=c++17
+#CXXFLAGS = -Ofast -std=c++17
+CXXFLAGS = -Wall -std=c++17 -Wdeprecated -pedantic -DMEMTRACE -g 
 
 $(PROG): $(OBJS) 
 	$(CXX) -o $(PROG) $(OBJS)

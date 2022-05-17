@@ -129,6 +129,7 @@ bool Bigint<bits>::operator==(const Bigint &x) const
 {
     for (unsigned int i = 0; i < bits / (sizeof(unsigned int) * 8); ++i)
     {
+        //if any element of the array doesn't match they're not equal
         if (storage[i] != x.storage[i])
             return false;
     }
@@ -140,6 +141,7 @@ bool Bigint<bits>::operator!=(const Bigint &x) const
 {
     for (unsigned int i = 0; i < bits / (sizeof(unsigned int) * 8); ++i)
     {
+        //if any element of the array doesn't match they're not equal
         if (storage[i] != x.storage[i])
             return true;
     }
@@ -149,6 +151,7 @@ bool Bigint<bits>::operator!=(const Bigint &x) const
 template <unsigned int bits>
 bool Bigint<bits>::operator<(const Bigint &x) const
 {
+    //start the loop from the MSB
     for (int i = bits / (sizeof(unsigned int) * 8) - 1; i >= 0; --i)
     {
         if (storage[i] != 0 || x.storage[i] != 0)
@@ -162,6 +165,7 @@ bool Bigint<bits>::operator<(const Bigint &x) const
 template <unsigned int bits>
 bool Bigint<bits>::operator>(const Bigint &x) const
 {
+    //start the loop from MSB
     for (int i = bits / (sizeof(unsigned int) * 8) - 1; i >= 0; --i)
     {
         if (storage[i] != 0 || x.storage[i] != 0)
@@ -179,6 +183,7 @@ template <unsigned int bits>
 unsigned int Bigint<bits>::num_bits() const
 {
     unsigned int i = bits / (sizeof(unsigned int) * 8) - 1;
+    // i will be equal to the amount of array elements that are zero starting from MSB
     while (i > 0 && storage[i] == 0)
         --i;
     return storage[i] == 0 ? i * 8 * sizeof(unsigned int) : (i + 1) * 8 * sizeof(unsigned int) - __builtin_clz(storage[i]);
@@ -187,12 +192,14 @@ unsigned int Bigint<bits>::num_bits() const
 template <unsigned int bits>
 bool Bigint<bits>::is_even() const
 {
+    //check LSB
     return !(this->storage[0] & 1);
 }
 
 template <unsigned int bits>
 bool Bigint<bits>::is_odd() const
 {
+    //check LSB
     return this->storage[0] & 1;
 }
 
