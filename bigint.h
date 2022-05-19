@@ -1,10 +1,22 @@
 #ifndef BIGINT_H
 #define BIGINT_H
 
+#include <exception>
+#include <cctype>
 #include <iostream>
 #include <iomanip>
 #include <random>
 #include "memtrace.h"
+
+bool string_check(const char* x)
+{
+    for (int i = 0; i < strlen(x); ++i)
+    {
+        if (!isxdigit(x[i]))
+            return false;
+    }
+    return true;
+}
 
 /**
  * @tparam bits the number of bits used for storage.
@@ -55,6 +67,8 @@ Bigint<bits>::Bigint(const unsigned long long &x)
 template <unsigned int bits>
 Bigint<bits>::Bigint(const char *const &x)
 {
+    if (!string_check(x))
+        throw std::domain_error("found non-hexadecimal character in input string");
     storage = new unsigned int[bits / (sizeof(unsigned int) * 8)]{0};
     unsigned short number_of_runs = strlen(x) / 8;
     // a run consists of reading 8 hexadecimal digits enough to fill 32 bits

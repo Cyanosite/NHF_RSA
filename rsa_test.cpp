@@ -17,6 +17,7 @@ int main()
         Bigint<128> x("123456789ABCDEF1");
         EXPECT_EQ(0x12345678U, x.storage[1]) << "ctr from string failed";
         EXPECT_EQ(0x9ABCDEF1U, x.storage[0]) << "ctr from string failed";
+        EXPECT_THROW(Bigint<>("adsojfhbdwfhjnfeqnvbojqefgn"), std::domain_error);
     }
     END
     TEST(How many bits to represent, x = 123456789ABCDEF123456789ABCDEF)

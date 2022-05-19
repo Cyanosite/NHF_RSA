@@ -39,7 +39,6 @@ Bigint<bits> exponentiation(Bigint<bits> a, Bigint<bits> b, Bigint<bits> m)
     const Bigint<bits> null;
     while (b != null)
     {
-
         if (b.is_odd())
         {
             c = (c * a) % m;
@@ -57,19 +56,21 @@ Bigint<bits> exponentiation(Bigint<bits> a, Bigint<bits> b, Bigint<bits> m)
  * @return a*t congruent 1 (mod b)
  */
 template <unsigned int bits>
-Bigint<bits> inverse(Bigint<bits> a, Bigint<bits> b)
+Bigint<bits> inverse(const Bigint<bits> &a, const Bigint<bits> &b)
 {
-    Bigint<bits> b0(b);
+    Bigint<bits> a_m(a);
+    Bigint<bits> b_m(b);
+    const Bigint<bits> b0(b);
     Bigint<bits> x0;
     bool x0_sign = false;
     Bigint<bits> x1(1);
     bool x1_sign = false;
-    while (a > 1)
+    while (a_m > 1)
     {
-        Bigint<bits> q(a / b);
-        Bigint<bits> t = b;
-        b = a % b;
-        a = t;
+        Bigint<bits> q(a_m / b_m);
+        Bigint<bits> t = b_m;
+        b_m = a_m % b_m;
+        a_m = t;
         Bigint<bits> t2(x0);
         bool t2_sign = x0_sign;
         Bigint<bits> qx0(q * x0);
@@ -96,13 +97,13 @@ Bigint<bits> inverse(Bigint<bits> a, Bigint<bits> b)
  * @return True if m is a prime.
  */
 template <unsigned int bits>
-bool prime_check(Bigint<bits> m)
+bool prime_check(const Bigint<bits> &m)
 {
     Bigint<bits> high(m - 1);
     const Bigint<bits> one(1);
+    Bigint<bits> a;
     for (unsigned short k = 0; k < 100; ++k)
     {
-        Bigint<bits> a;
         a.rng(high.num_bits());
         if (gcd(m, a) != one)
             return false;
