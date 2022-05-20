@@ -8,6 +8,7 @@
 #include "bigint.h"
 #include "memtrace.h"
 
+// use this macro to display additional information about the primes, decryption key, etc...
 //#define DEBUG
 
 /**
