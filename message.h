@@ -5,17 +5,24 @@
 #include <vector>
 #include <cstring>
 #include <string>
-#include "algorithms.h"
 #include "bigint.h"
 #include "memtrace.h"
 
 //#define DEBUG
 
+/**
+ * Defines the bit-width of the bigints stored in the message, the key_size of the rsa algorithm
+ * and the primes used for the key creation.
+ */
 enum message_size
 {
+    // bigint_size has to be twice the size of key_size as we need to account for multiplication inside the algorithms
     bigint_size = 256,
+    // key_size has to be twice the size of the primes as this is created through their multiplication
     key_size = 128,
+    // we use the value of prime_size to determine the values of the above two
     prime_size = 64,
+    // c_size can always stay 32 bits, it just has to be smaller than the primes
     c_size = 32,
 };
 
@@ -76,7 +83,7 @@ public:
     Message operator+(const char &x) const
     {
         if (is_encrypted)
-            throw("Cannot extend encrypted message, please decrypt it first");
+            throw(std::logic_error("Cannot concatenate encrypted message, please decrypt it first"));
         Message res(*this);
         res.message.push_back(x);
         return res;
@@ -85,7 +92,7 @@ public:
     Message operator+(const std::string &string) const
     {
         if (is_encrypted)
-            throw("Cannot extend encrypted message, please decrypt it first");
+            throw(std::logic_error("Cannot concatenate encrypted message, please decrypt it first"));
         Message res(*this);
         size_t message_size = message.size();
         res.message.resize(message_size + string.length());
@@ -96,7 +103,7 @@ public:
     Message operator+(const Message &x) const
     {
         if (is_encrypted)
-            throw("Cannot extend encrypted message, please decrypt it first");
+            throw(std::logic_error("Cannot concatenate encrypted message, please decrypt it first"));
         Message res(*this);
         size_t message_size = message.size();
         res.message.resize(message_size + x.message.size());
@@ -112,47 +119,58 @@ public:
 
     void encrypt()
     {
+        // generate the 2 primes for the algorithm
         for (unsigned short i = 0; i < 2; ++i)
         {
+            // we generate a new number until we find a prime
             Bigint<bigint_size> my_prime;
             do
             {
                 my_prime.rng(prime_size);
-            } while (!prime_check(my_prime));
+            } while (!my_prime.prime_check());
 #ifdef DEBUG
             std::cout << "prime found: " << my_prime << std::endl;
 #endif
             primes[i] = my_prime;
         }
+        // the public key will be the product of the primes
         public_key = primes[0] * primes[1];
         Bigint<bigint_size> null;
         Bigint<bigint_size> one(1);
+        // find a c such that c and the public_key are coprimes
         do
         {
             c.rng(c_size);
-        } while (!prime_check(c) || gcd(public_key, c) != one);
+        } while (!c.prime_check() || public_key.gcd(c) != one);
 #ifdef DEBUG
         std::cout << "c: " << c << std::endl;
         std::cout << "public key: " << public_key << std::endl;
 #endif
+        // execute the encryption function on the entire message
         for (std::vector<Bigint<bigint_size> >::iterator i = message.begin(); i < message.end();)
-            *i++ = exponentiation(*i, c, public_key);
+            *i++ = (*i).exponentiation(c, public_key);
         is_encrypted = true;
     }
     void decrypt()
     {
+        // calculate the private_key, this is the Carmichael's totient function
+        // here the 2 inputs are the primes - 1 (the result of Euler's function, how many coprimes a given number has below them)
+        // then we have to calculate the lcm of the primes - 1
+        // we can do this as |a*b|/gcd(a,b)
         Bigint<bigint_size> one(1);
         Bigint<bigint_size> temp1(primes[0] - one);
         Bigint<bigint_size> temp2(primes[1] - one);
-        private_key = (temp1 * temp2) / gcd(temp1, temp2);
-        Bigint<bigint_size> decryption_key = inverse(c, private_key);
+        private_key = (temp1 * temp2) / temp1.gcd(temp2);
+        // determine the decryption key by getting the modular multiplicative inverse of c
+        Bigint<bigint_size> decryption_key = c.inverse(private_key);
 #ifdef DEBUG
-        std::cout << "gcd: " << gcd(temp1, temp2) << std::endl;
+        std::cout << "gcd: " << temp1.gcd(temp2) << std::endl;
         std::cout << "private_key: " << private_key << std::endl;
         std::cout << "decryption key: " << decryption_key << std::endl;
 #endif
+        // after finding the decryption key we just have to execute the decryption function
         for (std::vector<Bigint<bigint_size> >::iterator i = message.begin(); i < message.end();)
-            *i++ = exponentiation(*i, decryption_key, public_key);
+            *i++ = (*i).exponentiation(decryption_key, public_key);
         is_encrypted = false;
     }
     friend std::ostream &operator<<(std::ostream &, Message &);
@@ -160,6 +178,7 @@ public:
 
 std::ostream &operator<<(std::ostream &os, Message &x)
 {
+    // we print the LSB of the stored message converted to a character
     for (std::vector<Bigint<bigint_size> >::iterator i = x.message.begin(); i < x.message.end(); ++i)
         os << (char)(i->storage[0]);
     return os;

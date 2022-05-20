@@ -117,7 +117,7 @@ int main()
         Bigint<> m(1238);
         Bigint<> a(567);
         Bigint<> one(1);
-        EXPECT_EQ(one, gcd(m, a)) << "euclidean failed";
+        EXPECT_EQ(one, m.gcd(a)) << "gcd failed";
     }
     END
     TEST(Algorithm, gcd 2)
@@ -125,7 +125,7 @@ int main()
         Bigint<256> m("84fb24809d95c5315fb061d16fe016c0e55bd085da79a7c3cda921b3f3c364");
         Bigint<256> a("3a283606d4325f6a8fdedec81289481c8");
         Bigint<256> four(4);
-        EXPECT_EQ(four, gcd(m, a)) << "euclidean 2 failed";
+        EXPECT_EQ(four, m.gcd(a)) << "gcd 2 failed";
     }
     END
     TEST(Algorithm, exponentiation)
@@ -134,7 +134,7 @@ int main()
         Bigint<256> b(53);
         Bigint<256> m(97);
         Bigint<256> result(23);
-        EXPECT_EQ(result, exponentiation(a, b, m)) << "exponentiation failed";
+        EXPECT_EQ(result, a.exponentiation(b, m)) << "exponentiation failed";
     }
     END
     TEST(Algorithm, exponentiation 2)
@@ -143,7 +143,7 @@ int main()
         Bigint<256> b("944dea746e003341508a6b4b");
         Bigint<256> m("81dad55da5b9126e9f");
         Bigint<256> result("754c14c8901dc84ec2");
-        EXPECT_EQ(result, exponentiation(a, b, m)) << "exponentiation 2 failed";
+        EXPECT_EQ(result, a.exponentiation(b, m)) << "exponentiation 2 failed";
     }
     END
     TEST(Algorithm, inverse)
@@ -151,7 +151,7 @@ int main()
         Bigint<1024> a("2481f32ab7fe49d59fd6e336aa4c1c53ddc985f2d6d9dd");
         Bigint<1024> m("e53fa29f5cd9f1cda165049bfe4b8187e0cb75fe6730c37871788ea57aee4841d0fabb387a1ca85dc2");
         Bigint<1024> result("945fea503a3d2f1f8b9fb6c60ab407c5003923d93c7dab6f5bafee46b81f70d32e4c0ea7d3bef78e03");
-        EXPECT_EQ(result, inverse(a, m)) << "inverse failed";
+        EXPECT_EQ(result, a.inverse(m)) << "inverse failed";
     }
     END
     TEST(Algorithm, inverse 2)
@@ -159,7 +159,7 @@ int main()
         Bigint<1024> e("865d98df4f0be16466b1");
         Bigint<1024> m("1ae09926bc4aec40ab4e8916c56f023fb92b");
         Bigint<1024> result("d133bc208ff54618ad91d792f46a4b31957");
-        EXPECT_EQ(result, inverse(e, m)) << "inverse 2 failed";
+        EXPECT_EQ(result, e.inverse(m)) << "inverse 2 failed";
     }
     END
     TEST(RSA, encryption and decryption)

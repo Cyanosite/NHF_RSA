@@ -8,10 +8,17 @@
 #include <random>
 #include "memtrace.h"
 
-bool string_check(const char* x)
+/**
+ * checks whether the input string contains only hexadecimal characters
+ * @param x the input string
+ * @return true if the string only contains hexadecimal characters
+ */
+bool string_check(const char *x)
 {
-    for (int i = 0; i < strlen(x); ++i)
+    size_t size_of_x = strlen(x);
+    for (size_t i = 0; i < size_of_x; ++i)
     {
+        // isxdigit returns true if the character is hexadecimal ([a-fA-F]|[0-9])
         if (!isxdigit(x[i]))
             return false;
     }
@@ -49,9 +56,21 @@ struct Bigint
     Bigint operator%(const Bigint &) const;
     Bigint operator<<(const unsigned int &) const;
     Bigint operator>>(const unsigned int &) const;
+    // algorithms
+    // greatest common divisor
+    Bigint gcd(const Bigint &) const;
+    // modular exponentiation
+    Bigint exponentiation(const Bigint<bits> &, const Bigint<bits> &) const;
+    // modular multiplicative inverse
+    Bigint inverse(const Bigint &) const;
+    // Fermat primality test
+    bool prime_check() const;
     ~Bigint();
 };
 
+/**
+ * @param x a 64 bit integer.
+ */
 template <unsigned int bits>
 Bigint<bits>::Bigint(const unsigned long long &x)
 {
@@ -74,6 +93,7 @@ Bigint<bits>::Bigint(const char *const &x)
     // a run consists of reading 8 hexadecimal digits enough to fill 32 bits
     if (number_of_runs > 1)
     {
+        // starting 8 characters before the end and decrementing it by 8 every run
         const char *startpos = x + strlen(x) * sizeof(char) - 8 * sizeof(char);
         int i = 0;
         for (; i < number_of_runs; ++i)
@@ -104,9 +124,9 @@ Bigint<bits> &Bigint<bits>::operator=(const Bigint &x)
 {
     if (this != &x)
     {
-    delete[] storage;
-    storage = new unsigned int[bits / (sizeof(unsigned int) * 8)];
-    std::memcpy(storage, x.storage, bits / 8);
+        delete[] storage;
+        storage = new unsigned int[bits / (sizeof(unsigned int) * 8)];
+        std::memcpy(storage, x.storage, bits / 8);
     }
     return *this;
 }
@@ -114,7 +134,8 @@ Bigint<bits> &Bigint<bits>::operator=(const Bigint &x)
 /**
  * @param size_max upper limit of randomization in terms of bit size.
  * If (size_max = 0) => the entire size of its storage will be randomized
- * @return randomized output (size in bits = size_max/32) using std::random_device
+ * @return randomized output (size in bits = size_max/32) using std::random_device.
+ * Not that std::random_device may produce deterministic results depending on the device!
  */
 template <unsigned int bits>
 void Bigint<bits>::rng(const unsigned int &size_max)
@@ -143,7 +164,7 @@ bool Bigint<bits>::operator==(const Bigint &x) const
 {
     for (unsigned int i = 0; i < bits / (sizeof(unsigned int) * 8); ++i)
     {
-        //if any element of the array doesn't match they're not equal
+        // if any element of the array doesn't match they're not equal
         if (storage[i] != x.storage[i])
             return false;
     }
@@ -155,7 +176,7 @@ bool Bigint<bits>::operator!=(const Bigint &x) const
 {
     for (unsigned int i = 0; i < bits / (sizeof(unsigned int) * 8); ++i)
     {
-        //if any element of the array doesn't match they're not equal
+        // if any element of the array doesn't match they're not equal
         if (storage[i] != x.storage[i])
             return true;
     }
@@ -165,28 +186,32 @@ bool Bigint<bits>::operator!=(const Bigint &x) const
 template <unsigned int bits>
 bool Bigint<bits>::operator<(const Bigint &x) const
 {
-    //start the loop from the MSB
+    // start the loop from the MSB
     for (int i = bits / (sizeof(unsigned int) * 8) - 1; i >= 0; --i)
     {
+        // the first non-zero element will determine the return value
         if (storage[i] != 0 || x.storage[i] != 0)
         {
             return storage[i] < x.storage[i];
         }
     }
+    // if the inputs are 0 it will return false
     return false;
 }
 
 template <unsigned int bits>
 bool Bigint<bits>::operator>(const Bigint &x) const
 {
-    //start the loop from MSB
+    // start the loop from MSB
     for (int i = bits / (sizeof(unsigned int) * 8) - 1; i >= 0; --i)
     {
+        // the first non-zero element will determine the return value
         if (storage[i] != 0 || x.storage[i] != 0)
         {
             return storage[i] > x.storage[i];
         }
     }
+    // if the inputs are 0 it will return false
     return false;
 }
 
@@ -206,14 +231,14 @@ unsigned int Bigint<bits>::num_bits() const
 template <unsigned int bits>
 bool Bigint<bits>::is_even() const
 {
-    //check LSB
+    // check LSB
     return !(this->storage[0] & 1);
 }
 
 template <unsigned int bits>
 bool Bigint<bits>::is_odd() const
 {
-    //check LSB
+    // check LSB
     return this->storage[0] & 1;
 }
 
@@ -225,8 +250,10 @@ Bigint<bits> Bigint<bits>::operator+(const Bigint &x) const
     unsigned long long temp;
     for (unsigned int i = 0; i < bits / (sizeof(unsigned int) * 8); ++i)
     {
+        // add together the current array elements of both inputs and the last carry
         temp = (unsigned long long)storage[i] + (unsigned long long)x.storage[i] + (unsigned long long)carry;
-        // the next carry will be the temp shifted down by 32
+        // the carry will be the upper half of the unsigned long long integer
+        // so we shift it down by that amount
         carry = temp >> (8 * sizeof(unsigned int));
         res.storage[i] = (unsigned int)temp;
     }
@@ -241,6 +268,7 @@ Bigint<bits> Bigint<bits>::operator-(const Bigint &x) const
     unsigned long long temp;
     for (unsigned int i = 0; i < bits / (sizeof(unsigned int) * 8); ++i)
     {
+        // subtract the inputs and add the last borrow
         temp = (unsigned long long)storage[i] - ((unsigned long long)x.storage[i] + (unsigned long long)borrow);
         borrow = temp >> (8 * sizeof(unsigned long long) - 1);
         res.storage[i] = (unsigned int)temp;
@@ -248,6 +276,11 @@ Bigint<bits> Bigint<bits>::operator-(const Bigint &x) const
     return res;
 }
 
+/**
+ * This multiplication uses the classic schoolbook multiplication method
+ * @return The return value will be the same size as the inputs, it will overflow
+ * if the numbers are too big. Choose sufficiently large inputs ensuring it won't overflow.
+ */
 template <unsigned int bits>
 Bigint<bits> Bigint<bits>::operator*(const Bigint &x) const
 {
@@ -286,7 +319,9 @@ Bigint<bits> Bigint<bits>::operator/(const Bigint &x) const
     Bigint e(1);
     c = c << bd;
     e = e << bd;
+    // MSB of storage
     unsigned int ms_part = bits / (sizeof(unsigned int) * 8) - 1;
+    // 31 bits
     unsigned int bitsize_m_1 = (sizeof(unsigned int) * 8) - 1;
     Bigint r;
     while (true)
@@ -307,6 +342,9 @@ Bigint<bits> Bigint<bits>::operator/(const Bigint &x) const
     return quo;
 }
 
+/**
+ * uses the same algorithm as division but returns the remainder
+ */
 template <unsigned int bits>
 Bigint<bits> Bigint<bits>::operator%(const Bigint &x) const
 {
@@ -392,12 +430,129 @@ Bigint<bits>::~Bigint()
     delete[] storage;
 }
 
-// iostream operators
+/**
+ * Euclidean algorithm finding the greatest common divisor of the given inputs.
+ * @tparam bits number of bits used to store the integers, usually ommited in functions calls.
+ * @param a
+ * @return Greatest common divisor of a and b.
+ */
+template <unsigned int bits>
+Bigint<bits> Bigint<bits>::gcd(const Bigint &b) const
+{
+    Bigint a = *this;
+    Bigint b_temp = b;
+    Bigint temp;
+    const Bigint null;
+    while (b_temp != null)
+    {
+        temp = b_temp;
+        b_temp = a % b_temp;
+        a = temp;
+    }
+    return a;
+}
+
+/**
+ * Modular exponentiation algorithm.
+ * @tparam bits number of bits used to store the integers, usually ommited in functions calls.
+ * @param a must be less than m
+ * @param b must be greater than 0
+ * @param m must be larger than a
+ * @return aˆb % m
+ */
+template <unsigned int bits>
+Bigint<bits> Bigint<bits>::exponentiation(const Bigint &b, const Bigint &m) const
+{
+    Bigint a = *this;
+    Bigint b_temp = b;
+    Bigint c(1);
+    const Bigint null;
+    while (b_temp != null)
+    {
+        if (b_temp.is_odd())
+        {
+            c = (c * a) % m;
+        }
+        a = (a * a) % m;
+        b_temp = b_temp >> 1;
+    }
+    return c;
+}
+
+/**
+ * Modular multiplicative inverse algorithm (using extended Euclidean algorithm).
+ * A modular multiplicative inverse of an integer a is an integer x such that the product ax is congruent to 1 with respect to the modulus m.
+ * @tparam bits number of bits used to store the integers, usually ommited in functions calls.
+ * @return a*t congruent 1 (mod b)
+ */
+template <unsigned int bits>
+Bigint<bits> Bigint<bits>::inverse(const Bigint &b) const
+{
+    Bigint a = *this;
+    Bigint b_temp = b;
+    Bigint x0;
+    bool x0_sign = false;
+    Bigint x1(1);
+    bool x1_sign = false;
+    while (a > 1)
+    {
+        Bigint q(a / b_temp);
+        Bigint t = b_temp;
+        b_temp = a % b_temp;
+        a = t;
+        Bigint t2(x0);
+        bool t2_sign = x0_sign;
+        Bigint qx0(q * x0);
+        if (x0_sign != x1_sign)
+        {
+            x0 = x1 + qx0;
+            x0_sign = x1_sign;
+        }
+        else
+        {
+            x0 = (x1 > qx0) ? x1 - qx0 : qx0 - x1;
+            x0_sign = x1 > qx0 ? x1_sign : !x0_sign;
+        }
+        x1 = t2;
+        x1_sign = t2_sign;
+    }
+    return x1_sign ? b - x1 : x1;
+}
+
+/**
+ * Fermat primality test algorithm.
+ * @tparam bits number of bits used to store the integers, usually ommited in functions calls.
+ * @param m the integer to test
+ * @return True if m is a prime.
+ */
+template <unsigned int bits>
+bool Bigint<bits>::prime_check() const
+{
+    Bigint high(*this - 1);
+    const Bigint one(1);
+    Bigint a;
+    for (unsigned short k = 0; k < 100; ++k)
+    {
+        a.rng(high.num_bits());
+        if (this->gcd(a) != one)
+            return false;
+        if (a.exponentiation(high, *this) != one)
+            return false;
+    }
+    return true;
+}
+
+/**
+ * displays the Bigint in normal ordering with hexadecimal characters
+ * @param x the Bigint to display
+ */
 template <unsigned int bits>
 std::ostream &operator<<(std::ostream &os, const Bigint<bits> &x)
 {
     unsigned short size = bits / (sizeof(unsigned int) * 8);
     os << std::hex;
+    // true until we find an array element that isn't 0
+    // we need this because we don't want to display the leading zeros
     bool isnull = true;
     for (int i = size - 1; i >= 0; --i)
     {
@@ -412,8 +567,10 @@ std::ostream &operator<<(std::ostream &os, const Bigint<bits> &x)
         else
             os << std::setw(8) << std::setfill('0') << (unsigned int)x.storage[i];
     }
+    // if the number is actually 0 then we just display a single 0
     if (isnull)
         os << 0;
+    // reset std::hex flag
     os << std::dec;
     return os;
 }
